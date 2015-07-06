@@ -10,7 +10,7 @@
 			<!-- Extra -->
 			<div id="marketing" class="container">
 			<div id="header-line" >
-					<h2><?php echo $member_title;?></h2>
+					<h2><?php echo $member_manage;?></h2>
 			</div>
 			
 			<div class="11u" style="margin-left:23px;width: 95%;" > 
@@ -25,8 +25,9 @@
 									
 									
 									<?php 
-									if(!empty($message)){
-										echo '<div class="alert '.$alertclass.'" >'.$message.'</div>';
+									if(isset($_SESSION['flashdata'])){
+										echo '<div style="  padding: 10px 15px;color: #FFF;background: #FF7D7D;border: 2px solid #FF0000;width: 97%;margin-left: 1.5%;border-radius: 5px;margin-bottom: 10px;" >'.$_SESSION['flashdata'].'</div>';
+										unset($_SESSION['flashdata']);
 									}
 									?>
 									
@@ -40,18 +41,20 @@
 									<div id="uploadResult" style="  width: 97%;margin-top: 0px;margin-bottom: 10px;" >
 										<table class="table-data" > 
 											<tr>
-												<th width="10%" align="center" ><input type="checkbox" name="checkAll" id="checkAll" value="" /></th>
+												<th width="10%" align="center" ><input type="checkbox" name="checkall" id="checkall" value="" /></th>
 												<th width="30%" ><?php echo $name_label;?></th>
 												<th width="30%" align="center" ><?php echo $phone_label;?></th>
 												<th width="30%" align="center" ><?php echo $email_label;?></th>
 											</tr>
 											<?php 
 											foreach($users as $user){
+											$phone = ltrim($user->phone_no, "0");
+											$phone = "0".$phone;
 											?>
 											<tr id="<?php echo "row".$user->member_id;?>" >
 												<td align="center" ><input type="checkbox" name="check[]" id="check" value="<?php echo $user->member_id;?>" class="checkbox" /></td>
 												<td ><?php echo $user->member_name;?></td>
-												<td align="center" ><?php echo $user->phone_no;?></td>
+												<td align="center" ><?php echo $phone;?></td>
 												<td align="center" ><?php echo $user->email;?></td>
 											</tr>
 											<?php 
@@ -169,18 +172,18 @@
 										<div class="formLabel" ><?php echo $country_label;?><font color="red">*</font></div>
 										<div class="formFields" >
 												<select id="code" name="code" style="padding: 9px;width:100%" >
+													<option value="81" selected>Japan</option>
 													<option value="91" >India</option>
-													<option value="81" >Japan</option>
 													<option value="1" >US</option>
 												</select>
 										</div>
 										<div class="clear" ></div>
 										
 										<div class="formLabel" ><?php echo $phone_label;?><font color="red">*</font></div>
-										<div class="formFields" ><input type="text" name="txtPh" id="txtPh" class="formFileField" onchange="checkPhoneno(this.value)" /></div>
+										<div class="formFields" ><input type="text" name="txtPh" id="txtPh" class="formFileField" onkeyup="checkPhoneno(this.value)" onchange="checkPhoneno(this.value)" /></div>
 										<div class="clear" ></div>
 										
-										<div class="formLabel" ><?php echo $email_label;?><font color="red">*</font></div>
+										<div class="formLabel" ><?php echo $email_label;?></div>
 										<div class="formFields" ><input type="text" name="txtEml" id="txtEml" class="formFileField" /></div>
 										<div class="clear" ></div>
 										
@@ -221,10 +224,10 @@
 										</div>
 										
 										<div class="formLabel" ><?php echo $phone_label;?><font color="red">*</font></div>
-										<div class="formFields" ><input type="text" name="txtPhEdt" id="txtPhEdt" class="formFileField" onchange="checkPhonenoEdt(this.value)" /></div>
+										<div class="formFields" ><input type="text" name="txtPhEdt" id="txtPhEdt" class="formFileField" onkeyup="checkPhonenoEdt(this.value)" onchange="checkPhonenoEdt(this.value)" /></div>
 										<div class="clear" ></div>
 										
-										<div class="formLabel" ><?php echo $email_label;?><font color="red">*</font></div>
+										<div class="formLabel" ><?php echo $email_label;?></div>
 										<div class="formFields" ><input type="text" name="txtEmlEdt" id="txtEmlEdt" class="formFileField" /></div>
 										<div class="clear" ></div>
 										
@@ -289,18 +292,39 @@
 		}
 	}
 	
+	function checkTwobyte(str){
+		var len = 0;
+		var isTwoByte = false;
+		strSrc = escape(str);
+		for(var i = 0; i < strSrc.length; i++, len++){
+			if(strSrc.charAt(i) == "%"){
+				if(strSrc.charAt(++i) == "u"){
+					i += 3;
+					isTwoByte = true;
+					len++;
+				}
+			i++;
+			}
+		}
+		return isTwoByte;
+	}
+	
 	function addNewMember(){
 		var epat =  /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-		var alphaExp = /^[0-9\ ]+$/;
+		var alphaExp = /^[a-zA-Z\ \']+$/;
+		var isTwoByte = checkTwobyte($("#txtNm").val());
+		
+		if(isTwoByte == false){
+			if(!alphaExp.test($("#txtNm").val())){alert("<?php echo $invalid_name;?>");$("#txtNm").focus();return false;}
+		}
 		
 		if($("#txtNm").val() == false){alert("<?php echo $mandatory_name;?>");$("#txtNm").focus();return false;}
-		else if(alphaExp.test($("#txtNm").val())){alert("<?php echo $invalid_name;?>");$("#txtNm").focus();return false;}
 		else if($("#txtPh").val() == false){alert("<?php echo $mandatory_phone;?>");$("#txtPh").focus();return false;}		
 		else if(isNaN($("#txtPh").val())){alert("<?php echo $invalid_phone;?>");$("#txtPh").focus();return false;}		
-		else if($("#txtPh").val().length > 10){alert("<?php echo $invalid_phone;?>");$("#txtPh").focus();return false;}		
+		/*else if($("#txtPh").val().length > 10){alert("<?php echo $invalid_phone;?>");$("#txtPh").focus();return false;}		
 		else if($("#txtPh").val().length < 10){alert("<?php echo $invalid_phone;?>");$("#txtPh").focus();return false;}		
 		else if($("#txtEml").val() == false){alert("<?php echo $mandatory_email;?>");$("#txtEml").focus();return false;}		
-		else if(!epat.test($("#txtEml").val())){alert("<?php echo $invalid_email;?>");$("#txtEml").focus();return false;}		
+		else if(!epat.test($("#txtEml").val())){alert("<?php echo $invalid_email;?>");$("#txtEml").focus();return false;}*/		
 		else{
 			alert("<?php echo $datasaved;?>");
 			return true;
@@ -309,17 +333,22 @@
 	
 	function editMember(){
 		var epat =  /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-		var alphaExp = /^[0-9\ ]+$/;
+		var alphaExp = /^[a-zA-Z\ \']+$/;
+		
+		var isTwoByte = checkTwobyte($("#txtNmEdt").val());
+		
+		if(isTwoByte == false){
+			if(!alphaExp.test($("#txtNmEdt").val())){alert("<?php echo $invalid_name;?>");$("#txtNmEdt").focus();return false;}
+		}
 		
 		if($("#txtNmEdt").val() == false){alert("<?php echo $mandatory_name;?>");$("#txtNmEdt").focus();return false;}	
-		else if(alphaExp.test($("#txtNmEdt").val())){alert("<?php echo $invalid_name;?>");$("#txtNmEdt").focus();return false;}
 		else if($("#codeEdt").val() == ""){alert("<?php echo $mandatory;?>");$("#codeEdt").focus();return false;}		
 		else if($("#txtPhEdt").val() == false){alert("<?php echo $mandatory_phone;?>");$("#txtPhEdt").focus();return false;}		
 		else if(isNaN($("#txtPhEdt").val())){alert("<?php echo $invalid_phone;?>");$("#txtPhEdt").focus();return false;}		
-		else if($("#txtPhEdt").val().length > 10){alert("<?php echo $invalid_phone;?>");$("#txtPhEdt").focus();return false;}		
-		else if($("#txtPhEdt").val().length < 10){alert("<?php echo $invalid_phone;?>");$("#txtPhEdt").focus();return false;}		
+		/*else if($("#txtPhEdt").val().length > 10){alert("<?php echo $invalid_phone;?>");$("#txtPhEdt").focus();return false;}		
+		else if($("#txtPhEdt").val().length < 10){alert("<?php echo $invalid_phone;?>");$("#txtPhEdt").focus();return false;}	
 		else if($("#txtEmlEdt").val() == false){alert("<?php echo $mandatory_email;?>");$("#txtEmlEdt").focus();return false;}		
-		else if(!epat.test($("#txtEmlEdt").val())){alert("<?php echo $invalid_email;?>");$("#txtEmlEdt").focus();return false;}
+		else if(!epat.test($("#txtEmlEdt").val())){alert("<?php echo $invalid_email;?>");$("#txtEmlEdt").focus();return false;}*/	
 		else{
 			alert("<?php echo $dataupdated;?>");
 			return true;
@@ -353,6 +382,9 @@
 	$(document).ready(function(){
 		/*Add New Model*/
 		$("#btn_add_new").click(function(){
+			$("#modal-2 #txtNm").val("");
+			$("#modal-2 #txtPh").val("");
+			$("#modal-2 #txtEml").val("");
 			$("#modal-2").toggle();
 		});
 		$("#close-model2").click(function(){
@@ -360,6 +392,8 @@
 		});
 		/*File Upload Model*/
 		$("#btn_upload").click(function(){
+			$("#modal-1 #category").val("");
+			$("#modal-1 #filefld").val("");
 			$("#modal-1").toggle();
 		});
 		$("#close-model1").click(function(){
@@ -419,11 +453,11 @@
 	}
 	
 	$(document).ready(function() {
-		$('#checkAll').click(function(event) {  
+		$("#checkall").click(function(){
 			if(this.checked) { 
-				$('.checkbox').each(function() { 
-					this.checked = true;  
-				});
+					$('.checkbox').each(function() { 
+						this.checked = true;  
+					});
 			}else{
 				$('.checkbox').each(function() {
 					this.checked = false; 
@@ -432,13 +466,21 @@
 		});
 		
 		$('.checkbox').click(function(event) {  
+			if($(".checkbox").length == $(".checkbox:checked").length) {
+				$("#checkall").trigger("click");
+			} else {
+				$("#checkall").removeAttr("checked");
+			}
+		});
+		
+		/*$('.checkbox').click(function(event) {  
 			$('.checkbox').each(function() { 
 				$('#checkAll').attr("checked",true);
 				if(this.checked == false) { 
 					$('#checkAll').attr("checked",false);
 				}
 			});
-		});
+		});*/
 	});
 	</script>
 </html>
