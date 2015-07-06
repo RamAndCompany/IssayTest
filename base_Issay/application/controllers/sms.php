@@ -97,6 +97,7 @@ class Sms extends CI_Controller {
 			$data['resend_btn']			= $this->lang->line("resend_btn");
 			$data['startenddatecheck']	= $this->lang->line("startenddatecheck");
 			$data['invalid_date']		= $this->lang->line("invalid_date");
+			$data['timealert']			= $this->lang->line("timealert");
 			$data["page"]				= "smshistory";
 			$this->load->model('Sms_model');
 			$this->load->model('Member_model');
@@ -105,14 +106,14 @@ class Sms extends CI_Controller {
 				  $sdt 	= explode("/", $_POST['sdate']);
 				  if($_POST['hr'] == ""){$hr = '00';}else{$hr=$_POST['hr'];}
 				  if($_POST['mnt'] == ""){$mnt = '00';}else{$mnt=$_POST['mnt'];}
-				  $sdate 	= $sdt[2].'-'.$sdt[0].'-'.$sdt[1].' '.$hr.':'.$mnt.':00';
+				  $sdate 	= $sdt[0].'-'.$sdt[1].'-'.$sdt[2].' '.$hr.':'.$mnt.':00';
 			}else{$sdate = '';}
 			
 			if(isset($_POST['edate']) && $_POST['edate'] != ""){
 				  $edt 	= explode("/", $_POST['edate']);
 				  if($_POST['thr'] == ""){$thr = '23';}else{$thr=$_POST['thr'];}
 				  if($_POST['tmnt'] == ""){$tmnt = '59';}else{$tmnt=$_POST['tmnt'];}
-				  $edate 	= $edt[2].'-'.$edt[0].'-'.$edt[1].' '.$thr.':'.$tmnt.':00';
+				  $edate 	= $edt[0].'-'.$edt[1].'-'.$edt[2].' '.$thr.':'.$tmnt.':00';
 			}else{$edate = '';}
 			
 			if(isset($_POST['phone'])){
@@ -414,13 +415,14 @@ class Sms extends CI_Controller {
 		$data['membergroup_menu'] 		= $this->lang->line("member_groups");
 		$data['changepwd_menu'] 		= $this->lang->line("change_pwd");
 		$data['back_btn'] 				= $this->lang->line("back_btn");
-		$data['continue_btn'] 				= $this->lang->line("continue_btn");
-		$data['select_year'] 				= $this->lang->line("select_year");
-		$data['select_month'] 				= $this->lang->line("select_month");
-		$data['select_hour'] 				= $this->lang->line("select_hour");
-		$data['select_minute'] 				= $this->lang->line("select_minute");
-		$data['select_day'] 				= $this->lang->line("select_day");
-		$data['sdatelessmsg'] 				= $this->lang->line("sdatelessmsg");
+		$data['continue_btn'] 			= $this->lang->line("continue_btn");
+		$data['select_year'] 			= $this->lang->line("select_year");
+		$data['select_month'] 			= $this->lang->line("select_month");
+		$data['select_hour'] 			= $this->lang->line("select_hour");
+		$data['select_minute'] 			= $this->lang->line("select_minute");
+		$data['select_day'] 			= $this->lang->line("select_day");
+		$data['sdatelessmsg'] 			= $this->lang->line("sdatelessmsg");
+		$data['futuresch'] 				= $this->lang->line("futuresch");
 		$data['now'] 	= $this->lang->line("now");
 		$data['hour'] 	= $this->lang->line("hour");
 		$data['minute'] = $this->lang->line("minute");
@@ -453,7 +455,7 @@ class Sms extends CI_Controller {
 			$dtm = $dt.' '.$hr.':'.$mnt.':00';
 		}
 		$this->load->model('Sms_model');
-		$data1 = array("schedule_date"=>$dtm);
+		$data1 = array("schedule_date"=>$dtm, "time_opt"=>$_POST['stype']);
 		$this->Sms_model->updateSchedule($data1, $sid);
 		redirect('/sms/step4?sid='.$sid, 'refresh');
 	}
@@ -611,22 +613,17 @@ class Sms extends CI_Controller {
 		$message = $_POST['message'];
 		$this->load->model('Content_model');
 		$res = '';
-		
-		if(isset($_POST['btn_test_call'])){
-				$apiusername 	= 'schoolmgmt';
-				$apipassword	= '45440e42bc';
-				$tonos 		    = $code.$phno;
-				$smstext 	    = $message;
-				$sms = new Sms();
-				$res = $sms->smsAPI($apiusername, $apipassword, $tonos, $smstext);
-			if($res == true){
-				$data = array("is_tested"=>'1');
-				$this->Content_model->updateFileStatus($data, $cid);
-				echo true;
-			}
-			else{
-				echo false;
-			}
+		$tonos 		    = '0'.$phno;
+		$smstext 	    = $message;
+		$sms = new Sms();
+		$res = $sms->smsAPI($tonos, $smstext);
+		if($res == '100'){
+			$data = array("is_tested"=>'1');
+			$this->Content_model->updateFileStatus($data, $cid);
+			echo true;
+		}
+		else{
+			echo false;
 		}
 		
 	}
@@ -682,7 +679,11 @@ class Sms extends CI_Controller {
 		$udata = $this->session->all_userdata();
 		$uid = $udata['user_id'];
 		$this->load->model('Sms_model');
-		$arr = array("schedule_status"=>'0');
+		$cdt = date('Y-m-d H:i:s');
+		$result = $this->Sms_model->getScheduledData($_GET['sid']);
+		foreach($result as $res);
+		if($res->time_opt == 'now'){$sdt = $cdt;}else{$sdt = $res->schedule_date;}
+		$arr = array("schedule_status"=>'0', "creation_date"=>$cdt, "schedule_date"=>$sdt);
 		$this->Sms_model->updateSchedule($arr, $_GET['sid']);
 		redirect('/sms/step7', 'refresh');
 		
@@ -734,7 +735,7 @@ class Sms extends CI_Controller {
 		$this->load->view('sms_step7.php', $data);
 	}
 	public function schedule(){
-		$this->load->model('Sms_model');
+		/*$this->load->model('Sms_model');
 		$date = date('Y-m-d H:i');
 		$schedules = $this->Sms_model->getReadySchedules($date);	
 		if(!empty($schedules)){
@@ -743,33 +744,36 @@ class Sms extends CI_Controller {
 				$message = $sch->content;
 				$members = $this->Sms_model->getAllScheduledMembers($sid);
 				$i=1;
-				foreach($members as $mem){
-					$mid = $mem->member_id;
-					$phno = $mem->phone_no;
-					$code = $mem->country_code;
-					$phno = $code.$phno;
-					
-					$apiusername 	= 'schoolmgmt';
-					$apipassword	= '45440e42bc';
-					$tonos 		    = $phno;
-					$smstext 	    = $message;
-					$sms = new Sms();
-					$res = $sms->smsAPI($apiusername, $apipassword, $tonos, $smstext);
-					if($res == true){
-						$data = array("delivery_status"=>'1');
-						$this->Sms_model->updateDeliveryStatus($data, $mid);
-						if(count($members) == $i){
-							$sdata = array("schedule_status"=>'1');
-							$this->Sms_model->updateScheduleStatus($sdata, $sid);
+				if(!empty($members)){
+					foreach($members as $mem){
+						$smid = $mem->sch_mem_id;
+						$mid = $mem->member_id;
+						$phno = $mem->phone_no;
+						$code = $mem->country_code;
+						$phno = '0'.$phno;
+						
+						$tonos 		    = $phno;
+						$smstext 	    = $message;
+						$sms = new Sms();
+						$res = $sms->smsAPI($tonos, $smstext);
+						if($res == true){
+							$data = array("delivery_status"=>'1');
+							$this->Sms_model->updateDeliveryStatus($data, $smid);
+							if(count($members) == $i){
+								$sdata = array("schedule_status"=>'1');
+								$this->Sms_model->updateScheduleStatus($sdata, $sid);
+								mail('sabirveli@gmail.com','sms scheduling: cron test', 'sms send');
+								mail('tonyvarghese1984@gmail.com','sms scheduling: cron test', 'sms send');
+							}
 						}
+						else{
+							echo "Failed !!!";
+						}
+					$i++;
 					}
-					else{
-						echo "Failed !!!";
-					}
-				$i++;
 				}
 			}
-		}
+		}*/
 	}
 	public function resend(){
 		$this->load->model('Sms_model');
@@ -785,30 +789,61 @@ class Sms extends CI_Controller {
 		$mid = $mem->member_id;
 		$phno = $mem->phone_no;
 		$code = $mem->country_code;
-		$phno = $code.$phno;
+		$phno = '0'.$phno;
 		$membercount = $this->Member_model->getTotalMemberStatusFromMemSchedule($sid);
 		foreach($membercount as $mc);
 		$msum = $mc->msum;
 		$mcount = $mc->mcount;
 		
-		$apiusername 	= 'schoolmgmt';
-		$apipassword	= '45440e42bc';
 		$tonos 		    = $phno;
 		$smstext 	    = $message;
 		$sms = new Sms();
-		$res = $sms->smsAPI($apiusername, $apipassword, $tonos, $smstext);
-		if($res == true){
-			$data = array("delivery_status"=>'1');
-			$this->Sms_model->updateDeliveryStatus($data, $mid);
+		$res = $sms->smsAPI($tonos, $smstext);
+			
+			if($res == '100'){
+				$data = array("delivery_status"=>'1');
+				$this->Sms_model->updateDeliveryStatus($data, $smid);
+			}
+			else {
+				$edata = array("delivery_status"=>'2');
+				$this->Sms_model->updateDeliveryStatus($edata, $smid);
+			}
+			
 			if($msum == $mcount){
 				$sdata = array("schedule_status"=>'1');
 				$this->Sms_model->updateScheduleStatus($sdata, $sid);
 			}
-			echo true;
+			
+		echo $res;
+		
 		}
-		else{echo false;}
-	}	
-	public function smsAPI($username, $password, $to, $message){
+	
+	public function smsAPI($to, $message){
+		$username 	= 'kkumamoto@uewave.com';
+		$password	= 'uewave0529';
+		$url 		= 'https://asp.ex-sms.com/webapi.php?';
+		$priority	= '2';
+		$sender		= 'ALERTS';
+		$request	= $url.'userid='.$username.'&password='.$password.'&telno='.$to.'&body='.urlencode($message).'&title=iSSay SMS Testing';
+		$xml = new SimpleXMLElement(file_get_contents($request));
+		$code = $xml->code;
+		if($code == '001'){$response = '001';}
+		else if($code == '010'){$response = '010';}
+		else if($code == '020'){$response = '020';}
+		else if($code == '030'){$response = '030';}
+		else if($code == '041'){$response = '041';}
+		else if($code == '050'){$response = '050';}
+		else if($code == '051'){$response = '051';}
+		else if($code == '060'){$response = '060';}
+		else if($code == '070'){$response = '070';}
+		else if($code == '500'){$response = '500';}
+		else{$response = '100';}
+		return $response;
+	}
+	
+	/*public function smsAPI($to, $message){
+		$username 	= 'schoolmgmt';
+		$password	= '45440e42bc';
 		$url 		= 'http://innobulksms.in/api/sentsms.php?';
 		$priority	= '2';
 		$sender		= 'ALERTS';
@@ -820,7 +855,7 @@ class Sms extends CI_Controller {
 		$response = curl_exec($ch);
 		curl_close($ch);
 		return $response;
-	}
+	}*/
 	
 }
 
