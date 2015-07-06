@@ -1,0 +1,218 @@
+.dash-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/dash-ico.png);
+	background-repeat:no-repeat;
+}
+
+.call-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/call-ico.png);
+	background-repeat:no-repeat;
+}
+
+.sms-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/icons/sms-ico.png);
+	background-repeat:no-repeat;
+}
+
+.content-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/content-ico.png);
+	background-repeat:no-repeat;
+}
+
+.member-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/member-ico.png);
+	background-repeat:no-repeat;
+}
+
+.user-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/user-ico.png);
+	background-repeat:no-repeat;
+}
+
+.placecall-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/placecall-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.placecall-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/placecall-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.history-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/history-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.history-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/history-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.groups-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/groups-ico.png);
+	background-repeat:no-repeat;
+}
+
+.addgroups-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/addgroups-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.addgroups-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/addgroups-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.sendsms-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/sendsms-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.sendsms-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/sendsms-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.voicecont-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/voicecont-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.voicecont-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/voicecont-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.adduser-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/adduser-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.adduser-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/adduser-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.edituser-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/edituser-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.edituser-ico-w{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/edituser-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.logout-ico{
+	width:21px;height:21px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/logout-ico.png);
+	background-repeat:no-repeat;
+}
+
+.changepwd-ico{
+	width:19px;height:19px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/changepwd-ico.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.changepwd-ico-w{
+	width:19px;height:19px;
+	float: left;
+	margin-right:5px;
+	background: url(../images/icons/changepwd-ico1.png);
+	background-repeat:no-repeat;
+	margin-left: 8px;
+}
+.play-ico{
+	width:20px;height:20px;
+	float: left;
+	margin-left: 30%;
+	margin-top: 5px;
+	background: url(../images/icons/play-ico.png);
+	background-repeat:no-repeat;
+}
+
+.viewdetails-ico{
+	width:20px;height:20px;
+	float: left;
+	margin-left: 30%;
+	margin-top: 5px;
+	background: url(../images/icons/viewdetails-ico.png);
+	background-repeat:no-repeat;
+}
+
+.smstext-ico{
+	width:20px;height:20px;
+	float: left;
+	margin-left: 30%;
+	margin-top: 5px;
+	background: url(../images/icons/smstext-ico.png);
+	background-repeat:no-repeat;
+}
