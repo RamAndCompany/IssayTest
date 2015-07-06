@@ -67,9 +67,13 @@ class Phonecall extends CI_Controller {
 			
 			/*Status*/
 			$data["status_completed"]  = $this->lang->line("status_completed");
-			$data["status_pending"]	   = $this->lang->line("status_pending");
 			$data["status_failed"]	   = $this->lang->line("status_failed");
 			$data["status_inprogress"] = $this->lang->line("status_inprogress");
+			$data["status_congestion"] = $this->lang->line("status_congestion");
+			$data["status_noanswer"] = $this->lang->line("status_noanswer");
+			$data["status_busy"] = $this->lang->line("status_busy");
+			$data['status_pending']		= $this->lang->line("status_pending");
+			
 			$data["viewdetails_label"] = $this->lang->line("viewdetails_label");
 			
 			$data['hour'] 				= $this->lang->line("hour");
@@ -94,12 +98,10 @@ class Phonecall extends CI_Controller {
 			$data['preview']			= $this->lang->line("preview");
 			
 			$data['loading']			= $this->lang->line("loading");
-			$data['status_failed']		= $this->lang->line("status_failed");
-			$data['status_pending']		= $this->lang->line("status_pending");
-			$data['status_completed']	= $this->lang->line("status_completed");
 			$data['resend_btn']			= $this->lang->line("resend_btn");
 			$data['startenddatecheck']	= $this->lang->line("startenddatecheck");
 			$data['invalid_date']		= $this->lang->line("invalid_date");
+			$data['timealert']			= $this->lang->line("timealert");
 			
 			$this->load->model('Member_model');
 			$this->load->model('Phonecall_model');
@@ -108,14 +110,14 @@ class Phonecall extends CI_Controller {
 				  $sdt 	= explode("/", $_POST['sdate']);
 				  if($_POST['hr'] == ""){$hr = '00';}else{$hr=$_POST['hr'];}
 				  if($_POST['mnt'] == ""){$mnt = '00';}else{$mnt=$_POST['mnt'];}
-				  $sdate 	= $sdt[2].'-'.$sdt[0].'-'.$sdt[1].' '.$hr.':'.$mnt.':00';
+				  $sdate 	= $sdt[0].'-'.$sdt[1].'-'.$sdt[2].' '.$hr.':'.$mnt.':00';
 			}else{$sdate = '';}
 			
 			if(isset($_POST['edate']) && $_POST['edate'] != ""){
 				  $edt 	= explode("/", $_POST['edate']);
 				  if($_POST['thr'] == ""){$thr = '23';}else{$thr=$_POST['thr'];}
 				  if($_POST['tmnt'] == ""){$tmnt = '59';}else{$tmnt=$_POST['tmnt'];}
-				  $edate 	= $edt[2].'-'.$edt[0].'-'.$edt[1].' '.$thr.':'.$tmnt.':00';
+				  $edate 	= $edt[0].'-'.$edt[1].'-'.$edt[2].' '.$thr.':'.$tmnt.':00';
 			}else{$edate = '';}
 			
 			if(isset($_POST['phone'])){
@@ -406,13 +408,14 @@ class Phonecall extends CI_Controller {
 		$data['membergroup_menu'] 		= $this->lang->line("member_groups");
 		$data['changepwd_menu'] 		= $this->lang->line("change_pwd");
 		$data['back_btn'] 				= $this->lang->line("back_btn");
-		$data['continue_btn'] 				= $this->lang->line("continue_btn");
-		$data['select_year'] 				= $this->lang->line("select_year");
-		$data['select_month'] 				= $this->lang->line("select_month");
-		$data['select_hour'] 				= $this->lang->line("select_hour");
-		$data['select_minute'] 				= $this->lang->line("select_minute");
-		$data['select_day'] 				= $this->lang->line("select_day");
-		$data['sdatelessmsg'] 				= $this->lang->line("sdatelessmsg");
+		$data['continue_btn'] 		= $this->lang->line("continue_btn");
+		$data['select_year'] 		= $this->lang->line("select_year");
+		$data['select_month'] 		= $this->lang->line("select_month");
+		$data['select_hour'] 		= $this->lang->line("select_hour");
+		$data['select_minute'] 		= $this->lang->line("select_minute");
+		$data['select_day'] 		= $this->lang->line("select_day");
+		$data['sdatelessmsg'] 		= $this->lang->line("sdatelessmsg");
+		$data['futuresch'] 			= $this->lang->line("futuresch");
 		$data['now'] 	= $this->lang->line("now");
 		$data['hour'] 	= $this->lang->line("hour");
 		$data['minute'] = $this->lang->line("minute");
@@ -445,7 +448,7 @@ class Phonecall extends CI_Controller {
 			$dtm = $dt.' '.$hr.':'.$mnt.':00';
 		}
 		$this->load->model('Phonecall_model');
-		$data1 = array("schedule_date"=>$dtm);
+		$data1 = array("schedule_date"=>$dtm, "time_opt"=>$_POST['stype']);
 		$this->Phonecall_model->updateSchedule($data1, $sid);
 		redirect('/phonecall/step4?sid='.$sid, 'refresh');
 	}
@@ -593,31 +596,30 @@ class Phonecall extends CI_Controller {
 		$this->load->view('phone_step5.php', $data);
 	}
 	
+	/*
+	For making test call
+	*/
 	public function step5TestAction(){
-		$sid = $_POST['sid'];
+		$sid 	= $_POST['sid'];
 		$cid = $_POST['cid'];
 		$code = $_POST['code'];
 		$phno = $code.$_POST['txtPhTst'];
 		$filenm = $_POST['filenm'];
-		
-		if(isset($_POST['filenm'])){$filenm = explode(".", $_POST['filenm']);$filenm = $filenm[0];}
+		if($filenm != ""){$filenm = substr($filenm,0,-4);}
 		else{$filenm = '';}
 		
 		$this->load->model('Content_model');
 		$res = '';
-		if(isset($_POST['btn_test_call'])){
-			$call = new Phonecall();
-			$res = $call->phoneCallAPI($phno, $filenm, '0', '0', '0');
-			//if($res == true){
+		$call = new Phonecall();
+		$res = $call->phoneCallAPI($phno, $filenm, '0', '0', '0'); 
+			if($res == true){
 				$data = array("is_tested"=>'1');
 				$this->Content_model->updateFileStatus($data, $cid);
 				echo true;
-			/*}
+			}
 			else{
 				echo false;
-			}*/
-		}
-		
+			}
 	}
 	
 	public function step6(){
@@ -669,7 +671,11 @@ class Phonecall extends CI_Controller {
 		$udata = $this->session->all_userdata();
 		$uid = $udata['user_id'];
 		$this->load->model('Phonecall_model');
-		$arr = array("schedule_status"=>'0');
+		$cdt = date('Y-m-d H:i:s');
+		$result = $this->Phonecall_model->getScheduledData($_GET['sid']);
+		foreach($result as $res);
+		if($res->time_opt == 'now'){$sdt = $cdt;}else{$sdt = $res->schedule_date;}
+		$arr = array("schedule_status"=>'0', "creation_date"=>$cdt, "schedule_date"=>$sdt);
 		$this->Phonecall_model->updateSchedule($arr, $_GET['sid']);
 		redirect('/phonecall/step7', 'refresh'); 
 		
@@ -721,7 +727,7 @@ class Phonecall extends CI_Controller {
 	}
 	
 	public function schedule(){
-		$this->load->model('Phonecall_model');
+		/*$this->load->model('Phonecall_model');
 		$date = date('Y-m-d H:i');
 		$schedules = $this->Phonecall_model->getReadySchedules($date);	
 		if(!empty($schedules)){
@@ -732,30 +738,34 @@ class Phonecall extends CI_Controller {
 				else{$filenm = '';}
 				
 				$members = $this->Phonecall_model->getAllScheduledMembers($sid);
-				$i=1;
-				foreach($members as $mem){
-					$smid = $mem->sch_mem_id;
-					$mid  = $mem->member_id;
-					$phno = $mem->phone_no;
-					$code = $mem->country_code;
-					$phno = $code.$phno;
-					$call = new Phonecall();
-					$res = $call->phoneCallAPI($phno, $filenm, $mid, $smid, $sid);
-					if($res == true){
-						$data = array("delivery_status"=>'1');
-						$this->Phonecall_model->updateDeliveryStatus($data, $mid);
-						if(count($members) == $i){
-							$sdata = array("schedule_status"=>'1');
-							$this->Phonecall_model->updateScheduleStatus($sdata, $sid);
+				if(!empty($members)){
+					$i=1;
+					foreach($members as $mem){
+						$smid = $mem->sch_mem_id;
+						$mid  = $mem->member_id;
+						$phno = $mem->phone_no;
+						$code = $mem->country_code;
+						$phno = $code.$phno;
+						$call = new Phonecall();
+						$res = $call->phoneCallAPI($phno, $filenm, $mid, $smid, $sid);
+						if($res == true){
+							$data = array("delivery_status"=>'1', "call_account"=>'58380256', "call_send_date"=>date('Y-m-d H:i:s'));
+							$this->Phonecall_model->updateDeliveryStatus($data, $smid);
+							if(count($members) == $i){
+								$sdata = array("schedule_status"=>'1');
+								$this->Phonecall_model->updateScheduleStatus($sdata, $sid);
+							}
+							mail('sabirveli@gmail.com','call scheduling: cron test', 'call send');
+							mail('tonyvarghese1984@gmail.com','call scheduling: cron test', 'call send');
 						}
+						else{
+							echo "Failed !!!";
+						}
+					$i++;
 					}
-					else{
-						echo "Failed !!!";
-					}
-				$i++;
-				}
+			  }
 			}
-		}
+		}*/
 	}
 	
 	public function resend(){
@@ -783,7 +793,7 @@ class Phonecall extends CI_Controller {
 		if($res == true){
 			$this->Phonecall_model->deleteFromCDR($smid);
 			$data = array("delivery_status"=>'1');
-			$this->Phonecall_model->updateDeliveryStatus($data, $mid);
+			$this->Phonecall_model->updateDeliveryStatus($data, $smid);
 			if($msum == $mcount){
 				$sdata = array("schedule_status"=>'1');
 				$this->Phonecall_model->updateScheduleStatus($sdata, $sid);
@@ -794,10 +804,12 @@ class Phonecall extends CI_Controller {
 	}
 	
 	public function phoneCallAPI($no, $filename, $uid, $smid, $schid){
-		$url 		= 'http://119.18.52.168/asterisk/test.php?';
+		/* "http://218.251.250.2/makeCall.php?number=817012183178&filename=demo-thanks&userId=70&account=58380256&call_id=430&scheduleid=230";*/
+		$url 		= 'http://218.251.250.2/makeCall.php?';
 		$number		= $no;
 		$filename	= $filename;
-		$request	= $url.'number='.$no.'&filename='.$filename.'&userId='.$uid.'&call_id='.$smid.'&scheduleid='.$schid;
+		$account = '55775674';
+		$request	= $url.'number='.$no.'&filename='.$filename.'&userId='.$uid.'&account='.$account.'&call_id='.$smid.'&scheduleid='.$schid;
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $request);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
