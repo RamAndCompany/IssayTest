@@ -120,7 +120,7 @@ class Phonecall_model extends CI_Model {
 	}
 	
 	function getScheduledData($sid){
-		$sql = "SELECT sh.`schedule_id`, sh.`schedule_title`, sh.`content_id`, sh.`schedule_date`, sh.`is_group`, sc.`title`, sc.`filename`, sc.`content`, sc.`is_tested` FROM `isy_schedule` sh LEFT JOIN `isy_content` sc ON sc.`content_id` = sh.`content_id` WHERE sh.`schedule_id` = '".$sid."' AND sh.`schedule_date` <> '0000-00-00 00:00:00'";
+		$sql = "SELECT sh.`schedule_id`, sh.`schedule_title`, sh.`content_id`, sh.`schedule_date`, sh.`is_group`, sh.`time_opt`, sc.`title`, sc.`filename`, sc.`content`, sc.`is_tested` FROM `isy_schedule` sh LEFT JOIN `isy_content` sc ON sc.`content_id` = sh.`content_id` WHERE sh.`schedule_id` = '".$sid."' AND sh.`schedule_date` <> '0000-00-00 00:00:00'";
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
 		   return $query->result();
@@ -152,7 +152,7 @@ class Phonecall_model extends CI_Model {
 		}
 	}
 	function updateDeliveryStatus($arr, $sid){ 
-		$where = "`member_id` = '".$sid."'";
+		$where = "`sch_mem_id` = '".$sid."'";
 		$res = $this->db->update('isy_schedule_members', $arr, $where);
 		if ($res){
 		   return true;
@@ -252,7 +252,7 @@ class Phonecall_model extends CI_Model {
 	}
 	
 	function getCallHistoryDash($uid, $sid){
-		$sql = "SELECT sm.`sch_mem_id`, sm.`delivery_status`, sh.`schedule_id`, sh.`schedule_title`, sh.`schedule_date`, sh.`content_id`, sh.`schedule_status`, sh.`is_group`,   sh.`uid`, sh.`type`, m.`member_id`, m.`member_name`, m.`last_name`, m.`country_code`, m.`phone_no`, m.`email`, cd.`disposition` AS callstatus, cd.`calldate`, cd.`duration`, cd.`billsec`, cn.`title`, cn.`filename` FROM `isy_schedule_members` sm LEFT JOIN `isy_schedule` sh ON sh.`schedule_id` = sm.`schedule_id` LEFT JOIN `isy_members` m ON m.`member_id` = sm.`member_id` LEFT JOIN `cdr` cd ON cd.`userfield` = sm.`sch_mem_id` LEFT JOIN `isy_content` cn ON cn.`content_id` = sh.`content_id` WHERE sm.`uid` = '".$uid."' AND sh.`type` = 'call' AND sh.`schedule_status` <> '10' AND sh.`schedule_id` = '".$sid."'";
+		$sql = "SELECT sm.`sch_mem_id`, sm.`delivery_status`, sh.`schedule_id`, sh.`schedule_title`, sh.`schedule_date`, sh.`content_id`, sh.`schedule_status`, sh.`is_group`,   sh.`uid`, sh.`type`, m.`member_id`, m.`member_name`, m.`last_name`, m.`country_code`, m.`phone_no`, m.`email`, cd.`disposition` AS callstatus, cd.`calldate`, cd.`duration`, cd.`billsec`, cn.`title`, cn.`filename` FROM `isy_schedule_members` sm LEFT JOIN `isy_schedule` sh ON sh.`schedule_id` = sm.`schedule_id` LEFT JOIN `isy_members` m ON m.`member_id` = sm.`member_id` LEFT JOIN `cdr` cd ON cd.`call_id` = sm.`sch_mem_id` AND  cd.`scheduleid` = '".$sid."' LEFT JOIN `isy_content` cn ON cn.`content_id` = sh.`content_id` WHERE sm.`uid` = '".$uid."' AND sh.`type` = 'call' AND sh.`schedule_status` <> '10' AND sh.`schedule_id` = '".$sid."'";
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
 		   return $query->result();
@@ -265,7 +265,7 @@ class Phonecall_model extends CI_Model {
 	/**** PI GRAPH DATA *****/
 	
 	function getCallCountPiGraph($data){
-		$sql = "SELECT COUNT(*) AS tcount FROM `isy_schedule_members` m LEFT JOIN `cdr` cd ON cd.userfield = m.`sch_mem_id` LEFT JOIN `isy_schedule` s ON s.`schedule_id` = m.`schedule_id` WHERE m.`uid` = '".$data['uid']."' AND cd.`disposition` = '".$data['status']."' AND cd.`calldate` BETWEEN '".$data['sdate']."' AND '".$data['edate']."' AND s.`type` = 'call'";
+		$sql = "SELECT COUNT(*) AS tcount FROM `isy_schedule_members` m LEFT JOIN `cdr` cd ON cd.`call_id` = m.`sch_mem_id` LEFT JOIN `isy_schedule` s ON s.`schedule_id` = m.`schedule_id` WHERE m.`uid` = '".$data['uid']."' AND cd.`disposition` = '".$data['status']."' AND cd.`calldate` BETWEEN '".$data['sdate']."' AND '".$data['edate']."' AND s.`type` = 'call'";
 		//echo $sql;
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
@@ -276,7 +276,8 @@ class Phonecall_model extends CI_Model {
 		}
 	}
 	function getCallCountPiGraphPending($data){
-		$sql = "SELECT COUNT(*) AS tcount FROM `isy_schedule_members` m LEFT JOIN `cdr` cd ON cd.userfield = m.`sch_mem_id` LEFT JOIN `isy_schedule` s ON s.`schedule_id` = m.`schedule_id` WHERE m.`uid` = '".$data['uid']."' AND m.`delivery_status` = '".$data['status']."' AND s.`schedule_date` BETWEEN '".$data['sdate']."' AND '".$data['edate']."' AND s.`type` = 'call'";
+		$sql = "SELECT COUNT(*) AS tcount FROM `isy_schedule_members` m LEFT JOIN `cdr` cd ON cd.`call_id` = m.`sch_mem_id` LEFT JOIN `isy_schedule` s ON s.`schedule_id` = m.`schedule_id` WHERE m.`uid` = '".$data['uid']."' AND m.`delivery_status` = '".$data['status']."' AND s.`schedule_date` BETWEEN '".$data['sdate']."' AND '".$data['edate']."' AND s.`type` = 'call'";
+		
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
 		   return $query->result();
@@ -287,7 +288,7 @@ class Phonecall_model extends CI_Model {
 	}
 	
 	function deleteFromCDR($id){ 
-		$this->db->where('userfield', $id);
+		$this->db->where('call_id', $id);
 		$res = $this->db->delete('cdr'); 
 		if ($res){
 		   return true;

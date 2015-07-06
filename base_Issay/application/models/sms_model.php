@@ -79,7 +79,7 @@ class Sms_model extends CI_Model {
 		}
 	}
 	function getAllScheduledMembers($sid){
-		$sql = "SELECT sh.`member_id`, m.`member_name`, m.`last_name`, m.`country_code`, m.`phone_no`, m.`email`  FROM `isy_schedule_members` sh LEFT JOIN `isy_members` m ON m.`member_id` = sh.`member_id` WHERE sh.`schedule_id` = '".$sid."'";
+		$sql = "SELECT sh.`sch_mem_id`, sh.`member_id`, m.`member_name`, m.`last_name`, m.`country_code`, m.`phone_no`, m.`email`  FROM `isy_schedule_members` sh LEFT JOIN `isy_members` m ON m.`member_id` = sh.`member_id` WHERE sh.`schedule_id` = '".$sid."'";
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
 		   return $query->result();
@@ -123,7 +123,7 @@ class Sms_model extends CI_Model {
 	}
 	
 	function getScheduledData($sid){
-		$sql = "SELECT sh.`schedule_id`, sh.`schedule_title`, sh.`content_id`, sh.`schedule_date`, sh.`is_group`, sc.`title`, sc.`filename`, sc.`content`, sc.`is_tested` FROM `isy_schedule` sh LEFT JOIN `isy_content` sc ON sc.`content_id` = sh.`content_id` WHERE sh.`schedule_id` = '".$sid."' AND sh.`schedule_date` <> '0000-00-00 00:00:00'";
+		$sql = "SELECT sh.`schedule_id`, sh.`schedule_title`, sh.`content_id`, sh.`schedule_date`, sh.`is_group`, sh.`time_opt`, sc.`title`, sc.`filename`, sc.`content`, sc.`is_tested` FROM `isy_schedule` sh LEFT JOIN `isy_content` sc ON sc.`content_id` = sh.`content_id` WHERE sh.`schedule_id` = '".$sid."' AND sh.`schedule_date` <> '0000-00-00 00:00:00'";
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
 		   return $query->result();
@@ -155,7 +155,7 @@ class Sms_model extends CI_Model {
 		}
 	}
 	function updateDeliveryStatus($arr, $sid){ 
-		$where = "`member_id` = '".$sid."'";
+		$where = "`sch_mem_id` = '".$sid."'";
 		$res = $this->db->update('isy_schedule_members', $arr, $where);
 		if ($res){
 		   return true;
@@ -211,7 +211,7 @@ class Sms_model extends CI_Model {
 		if($data['status'] != ""){$cond4 = " AND sh.`schedule_status` = '".$data['status']."'";}
 		else{$cond4 = "";}
 		
-		$sql = "SELECT sh.`schedule_id`, sh.`schedule_title`, sh.`schedule_date`, sh.`creation_date`, sh.`schedule_status`, sh.`uid`, sh.`type`, sh.`is_group`, cn.`content_id`, cn.`title`, cn.`content` FROM `isy_schedule` sh LEFT JOIN `isy_content` cn ON cn.`content_id` = sh.`content_id` WHERE sh.`uid` = '".$data['uid']."' AND sh.`type` = 'sms' AND sh.`schedule_status` <> 10 ".$cond1.$cond2.$cond3.$cond4." ORDER BY sh.`schedule_id`";
+		$sql = "SELECT sh.`schedule_id`, sh.`schedule_title`, sh.`schedule_date`, sh.`creation_date`, sh.`schedule_status`, sh.`uid`, sh.`type`, sh.`is_group`, cn.`content_id`, cn.`title`, cn.`content` FROM `isy_schedule` sh LEFT JOIN `isy_content` cn ON cn.`content_id` = sh.`content_id` WHERE sh.`uid` = '".$data['uid']."' AND sh.`type` = 'sms' AND sh.`schedule_status` <> 10 ".$cond1.$cond2.$cond3.$cond4." ORDER BY sh.`schedule_id` DESC";
 		
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0){
